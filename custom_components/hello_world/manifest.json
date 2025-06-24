@@ -1,11 +1,11 @@
 {
   "domain": "hello_world",
-  "name": "Hello World Sensor",
-  "version": "1.0.4",
+  "name": "Hello World",
+  "version": "1.0.5",
   "documentation": "https://github.com/antony2080/hello_world",
   "dependencies": [],
   "codeowners": ["@antony2080"],
   "requirements": [],
   "iot_class": "local_polling",
-  "integration_type": "platform"
+  "config_flow": true
 }

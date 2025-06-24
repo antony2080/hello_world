@@ -1,0 +1,12 @@
+{
+  "title": "Hello World",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Setup Hello World",
+        "description": "No config needed.",
+        "data": {}
+      }
+    }
+  }
+}
