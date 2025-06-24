@@ -2,7 +2,5 @@
   "name": "Hello World",
   "content_in_root": false,
   "domain": "hello_world",
-  "country": "TW",
-  "homeassistant": "2023.0.0",
-  "render_readme": true
+  "homeassistant": "2023.0.0"
 }
