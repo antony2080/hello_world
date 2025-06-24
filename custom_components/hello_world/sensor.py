@@ -11,7 +11,7 @@ class HelloWorldSensor(Entity):
 
     @property
     def name(self):
-        return "Hello World Sensor"
+        return "Hello World Sensor test"
 
     @property
     def state(self):
