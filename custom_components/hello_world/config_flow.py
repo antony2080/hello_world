@@ -12,7 +12,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Dummy login validation
             username = user_input.get("username")
             password = user_input.get("password")
-            if username == "admin" and password == "password":  # Dummy credentials
+            if username == "admin" and password == "admin":  # Dummy credentials
                 # Simulate retrieving a device list
                 self.devices = ["Device 1", "Device 2", "Device 3"]
                 return await self.async_step_select_device()
