@@ -1,10 +1,7 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import async_get_platforms
 import logging
 
-from .camera import UrmetCamera
-from .button import ZoomButton
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,14 +17,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "password": entry.data["password"],
     }
 
-    platforms = async_get_platforms(hass, DOMAIN)
-    for platform in platforms:
-        _LOGGER.info("Adding entities to platform: %s", platform.domain)
-        platform.async_add_entities(
-            [
-                UrmetCamera(entry),
-                ZoomButton(entry, "ZoomIn"),
-                ZoomButton(entry, "ZoomOut"),
-            ]
-        )
+    # Forward the entry setup to the camera and button platforms
+    await hass.config_entries.async_forward_entry_setup(entry, "camera")
+    await hass.config_entries.async_forward_entry_setup(entry, "button")
+
     return True
