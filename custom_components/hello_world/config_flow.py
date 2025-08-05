@@ -1,6 +1,6 @@
 from homeassistant import config_entries
 import voluptuous as vol
-from . import DOMAIN
+from .const import DOMAIN
 
 
 class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

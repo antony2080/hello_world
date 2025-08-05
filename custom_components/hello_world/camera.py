@@ -1,5 +1,5 @@
 from homeassistant.components.camera import Camera
-from . import DOMAIN
+from .const import DOMAIN
 
 
 class UrmetCamera(Camera):

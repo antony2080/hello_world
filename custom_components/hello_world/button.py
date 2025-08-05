@@ -1,7 +1,7 @@
 import asyncio
 import aiohttp
 from homeassistant.components.button import ButtonEntity
-from . import DOMAIN
+from .const import DOMAIN
 
 
 class ZoomButton(ButtonEntity):
