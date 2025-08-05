@@ -7,14 +7,18 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
-        """Handle the initial step where the user provides login credentials."""
+        """Handle the initial step where the user provides host and login credentials."""
         if user_input is not None:
             # Dummy login validation
+            host = user_input.get("host")
             username = user_input.get("username")
             password = user_input.get("password")
-            if username == "admin" and password == "admin":  # Dummy credentials
-                # Simulate retrieving a device list
-                self.devices = ["Device 1", "Device 2", "Device 3"]
+
+            if (
+                host and username == "admin" and password == "admin"
+            ):  # Dummy credentials
+                # Simulate retrieving a camera stream and control options
+                self.devices = ["Camera Stream"]
                 return await self.async_step_select_device()
             else:
                 errors = {"base": "invalid_credentials"}
@@ -51,6 +55,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Return the schema for the login step."""
         return vol.Schema(
             {
+                vol.Required("host"): str,
                 vol.Required("username"): str,
                 vol.Required("password"): str,
             }
