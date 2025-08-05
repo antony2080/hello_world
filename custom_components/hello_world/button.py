@@ -8,14 +8,15 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
 class ZoomButton(ButtonEntity):
-    def __init__(self, entry, direction):
+    def __init__(self, hass, entry, direction):
+        self._hass = hass
         self._direction = direction  # "ZoomIn" or "ZoomOut"
         self._attr_name = f"Camera {direction}"
         self._attr_unique_id = f"urmet_camera_{direction.lower()}"
         self._entry = entry
 
     async def async_press(self):
-        data = self.hass.data[DOMAIN][self._entry.entry_id]
+        data = self._hass.data[DOMAIN][self._entry.entry_id]
         host = data["host"]
         auth = aiohttp.BasicAuth(data["username"], data["password"])
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -33,7 +34,7 @@ async def async_setup_entry(
     """Set up the button platform."""
     async_add_entities(
         [
-            ZoomButton(entry, "ZoomIn"),
-            ZoomButton(entry, "ZoomOut"),
+            ZoomButton(hass, entry, "ZoomIn"),
+            ZoomButton(hass, entry, "ZoomOut"),
         ]
     )

@@ -6,9 +6,9 @@ from .const import DOMAIN
 
 
 class UrmetCamera(Camera):
-    def __init__(self, entry):
+    def __init__(self, hass, entry):
         super().__init__()
-        data = entry.hass.data[DOMAIN][entry.entry_id]
+        data = hass.data[DOMAIN][entry.entry_id]
         host = data["host"]
 
         self._attr_name = "Urmet Camera Stream"
@@ -31,4 +31,4 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ):
     """Set up the camera platform."""
-    async_add_entities([UrmetCamera(entry)])
+    async_add_entities([UrmetCamera(hass, entry)])
