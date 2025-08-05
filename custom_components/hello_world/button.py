@@ -2,6 +2,9 @@ import asyncio
 import aiohttp
 from homeassistant.components.button import ButtonEntity
 from .const import DOMAIN
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
 class ZoomButton(ButtonEntity):
@@ -22,3 +25,15 @@ class ZoomButton(ButtonEntity):
             await session.put(url, data="Param1=1&Param2=5", headers=headers, auth=auth)
             await asyncio.sleep(0.4)
             await session.put(url, data="Param1=0&Param2=5", headers=headers, auth=auth)
+
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+):
+    """Set up the button platform."""
+    async_add_entities(
+        [
+            ZoomButton(entry, "ZoomIn"),
+            ZoomButton(entry, "ZoomOut"),
+        ]
+    )

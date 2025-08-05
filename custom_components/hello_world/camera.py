@@ -1,4 +1,7 @@
 from homeassistant.components.camera import Camera
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 
 
@@ -22,3 +25,10 @@ class UrmetCamera(Camera):
 
     async def stream_source(self):
         return self._stream_url
+
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+):
+    """Set up the camera platform."""
+    async_add_entities([UrmetCamera(entry)])
