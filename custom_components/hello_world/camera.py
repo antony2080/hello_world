@@ -8,6 +8,7 @@ from .const import DOMAIN
 class UrmetCamera(Camera):
     def __init__(self, hass, entry):
         super().__init__()
+        self._hass = hass
         data = hass.data[DOMAIN][entry.entry_id]
         host = data["host"]
 
