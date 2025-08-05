@@ -9,13 +9,14 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         """Handle the initial step where the user provides host and login credentials."""
         if user_input is not None:
-            # Dummy login validation
-            host = user_input.get("host")
-            username = user_input.get("username")
-            password = user_input.get("password")
+            # Save user input
+            self.host = user_input.get("host")
+            self.username = user_input.get("username")
+            self.password = user_input.get("password")
 
+            # Dummy login validation
             if (
-                host and username == "admin" and password == "admin"
+                self.host and self.username == "admin" and self.password == "admin"
             ):  # Dummy credentials
                 # Simulate retrieving a camera stream and control options
                 self.devices = ["Camera Stream"]
@@ -39,7 +40,12 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             selected_device = user_input.get("device")
             return self.async_create_entry(
                 title=f"Hello World - {selected_device}",
-                data={"device": selected_device},
+                data={
+                    "device": selected_device,
+                    "host": self.host,
+                    "username": self.username,
+                    "password": self.password,
+                },
             )
 
         return self.async_show_form(
