@@ -25,8 +25,9 @@ class UrmetCamera(Camera):
     def unique_id(self):
         return self._attr_unique_id
 
-    async def async_camera_image(self):
+    async def async_camera_image(self, width=None, height=None):
         # Fetch a snapshot image from the camera (if supported)
+        # The width and height parameters are ignored as the camera does not support resizing.
         data = self._hass.data[DOMAIN][self._entry.entry_id]
         host = data["host"]
         username = data.get("username")
