@@ -3,28 +3,53 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
+import logging
+import aiohttp
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class UrmetCamera(Camera):
     def __init__(self, hass, entry):
         super().__init__()
         self._hass = hass
+        self._entry = entry
         data = hass.data[DOMAIN][entry.entry_id]
         host = data["host"]
 
+        self._stream_url = f"rtsp://{host}:554/live/0/MAIN"
         self._attr_name = "Urmet Camera Stream"
         self._attr_unique_id = f"urmet_camera_{entry.entry_id}"
-        self._stream_url = f"rtsp://{host}:554/live/0/MAIN"
 
     @property
     def unique_id(self):
         return self._attr_unique_id
 
     async def async_camera_image(self):
-        # Placeholder for fetching a snapshot image from the camera
+        # Fetch a snapshot image from the camera (if supported)
+        data = self._hass.data[DOMAIN][self._entry.entry_id]
+        host = data["host"]
+        username = data.get("username")
+        password = data.get("password")
+
+        snapshot_url = f"http://{host}/Snapshot/1/RemoteImageCapture?ImageFormat=2"
+        auth = aiohttp.BasicAuth(username, password) if username and password else None
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(snapshot_url, auth=auth) as response:
+                    if response.status == 200:
+                        return await response.read()
+                    else:
+                        _LOGGER.error(
+                            "Failed to fetch snapshot image: HTTP %s", response.status
+                        )
+        except Exception as e:
+            _LOGGER.error("Failed to fetch snapshot image: %s", e)
         return None
 
     async def stream_source(self):
+        _LOGGER.info("Providing stream URL: %s", self._stream_url)
         return self._stream_url
 
 
