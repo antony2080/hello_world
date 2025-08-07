@@ -1,33 +1,47 @@
 from homeassistant import config_entries
 import voluptuous as vol
 from .const import DOMAIN
+from .api import UrmetCloudAPI
+from .scanner import scan_onvif_hosts, try_login_and_get_info
 
 
 class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input=None):
-        """Handle the initial step where the user provides host and login credentials."""
         if user_input is not None:
-            # Save user input
-            self.host = user_input.get("host")
-            self.username = user_input.get("username")
-            self.password = user_input.get("password")
+            self.httpd_username = user_input.get("httpd_username")
+            self.httpd_password = user_input.get("httpd_password")
 
-            # Dummy login validation
-            if (
-                self.host and self.username == "admin" and self.password == "admin"
-            ):  # Dummy credentials
-                # Simulate retrieving a camera stream and control options
-                self.devices = ["Camera Stream"]
-                return await self.async_step_select_device()
-            else:
-                errors = {"base": "invalid_credentials"}
+            # Use UrmetCloudAPI to login and get camera list
+            api = UrmetCloudAPI(self.httpd_username, self.httpd_password)
+            login_ok = await api.login()
+            if not login_ok:
                 return self.async_show_form(
                     step_id="user",
                     data_schema=self._get_login_schema(),
-                    errors=errors,
+                    errors={"base": "invalid_auth"},
                 )
+
+            camlist = await api.get_camera_list()
+            onvif_hosts = scan_onvif_hosts()
+            self.found_devices = []
+            for cam in camlist:
+                for ip in onvif_hosts:
+                    info = try_login_and_get_info(ip, cam["cam_usr"], cam["cam_psw"])
+                    if info and "1099" in info.Model:
+                        self.found_devices.append(
+                            {
+                                "name": cam["cam_name"],
+                                "uid": cam["cam_uid"],
+                                "ip": ip,
+                                "user": cam["cam_usr"],
+                                "pass": cam["cam_psw"],
+                            }
+                        )
+                        break
+
+            return await self.async_step_select_device()
 
         return self.async_show_form(
             step_id="user",
@@ -35,34 +49,32 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_select_device(self, user_input=None):
-        """Handle the step to select a device."""
-        if user_input is not None:
-            selected_device = user_input.get("device")
+        options = {f"{dev['name']} ({dev['ip']})": dev for dev in self.found_devices}
+
+        if user_input:
+            selected_label = user_input["device"]
+            selected = options[selected_label]
             return self.async_create_entry(
-                title=f"Hello World - {selected_device}",
+                title=f"{selected['name']} ({selected['ip']})",
                 data={
-                    "device": selected_device,
-                    "host": self.host,
-                    "username": self.username,
-                    "password": self.password,
+                    "ip": selected["ip"],
+                    "uid": selected["uid"],
+                    "username": selected["user"],
+                    "password": selected["pass"],
                 },
             )
 
         return self.async_show_form(
             step_id="select_device",
             data_schema=vol.Schema(
-                {
-                    vol.Required("device"): vol.In(self.devices),
-                }
+                {vol.Required("device"): vol.In(list(options.keys()))}
             ),
         )
 
     def _get_login_schema(self):
-        """Return the schema for the login step."""
         return vol.Schema(
             {
-                vol.Required("host"): str,
-                vol.Required("username"): str,
-                vol.Required("password"): str,
+                vol.Required("httpd_username"): str,
+                vol.Required("httpd_password"): str,
             }
         )
