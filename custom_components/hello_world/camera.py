@@ -15,10 +15,12 @@ class UrmetCamera(Camera):
         self._hass = hass
         self._entry = entry
         data = hass.data[DOMAIN][entry.entry_id]
-        host = data["host"]
-
-        self._stream_url = f"rtsp://{host}:554/live/0/MAIN"
-        self._attr_name = "Urmet Camera Stream"
+        self._ip = data["ip"]
+        self._uid = data["uid"]
+        self._username = data.get("username")
+        self._password = data.get("password")
+        self._stream_url = f"rtsp://{self._ip}:554/live/0/MAIN"
+        self._attr_name = f"Urmet Camera {self._uid}"
         self._attr_unique_id = f"urmet_camera_{entry.entry_id}"
 
     @property
@@ -26,15 +28,13 @@ class UrmetCamera(Camera):
         return self._attr_unique_id
 
     async def async_camera_image(self, width=None, height=None):
-        # Fetch a snapshot image from the camera (if supported)
         # The width and height parameters are ignored as the camera does not support resizing.
-        data = self._hass.data[DOMAIN][self._entry.entry_id]
-        host = data["host"]
-        username = data.get("username")
-        password = data.get("password")
-
-        snapshot_url = f"http://{host}/Snapshot/1/RemoteImageCapture?ImageFormat=2"
-        auth = aiohttp.BasicAuth(username, password) if username and password else None
+        snapshot_url = f"http://{self._ip}/Snapshot/1/RemoteImageCapture?ImageFormat=2"
+        auth = (
+            aiohttp.BasicAuth(self._username, self._password)
+            if self._username and self._password
+            else None
+        )
 
         try:
             async with aiohttp.ClientSession() as session:
