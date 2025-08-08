@@ -34,6 +34,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.found_devices = []
             # 準備所有任務
             tasks = []
+            task_map = []
             for cam in camlist:
                 for ip in onvif_hosts:
                     _LOGGER.debug(
@@ -44,31 +45,23 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
                         )
                     )
+                    task_map.append((cam, ip))
             _LOGGER.info("Starting concurrent login attempts")
             results = await asyncio.gather(*tasks)
 
             # 結果排序回配
-            index = 0
-            for cam in camlist:
-                matched_ip = None
-                for _ in onvif_hosts:
-                    info = results[index]
-                    index += 1
-                    if info and info.Manufacturer == "URMET" and "1099" in info.Model:
-                        _LOGGER.info("Matched camera %s with IP %s", cam["cam_uid"], ip)
-                        matched_ip = info  # 代表該 IP 有成功連線
-                        self.found_devices.append(
-                            {
-                                "name": cam["cam_name"],
-                                "uid": cam["cam_uid"],
-                                "ip": ip,
-                                "user": cam["cam_usr"],
-                                "pass": cam["cam_psw"],
-                            }
-                        )
-                        break
-                if matched_ip:
-                    continue
+            for (cam, ip), info in zip(task_map, results):
+                if info and info.Manufacturer == "URMET" and "1099" in info.Model:
+                    _LOGGER.info("Matched camera %s with IP %s", cam["cam_uid"], ip)
+                    self.found_devices.append(
+                        {
+                            "name": cam["cam_name"],
+                            "uid": cam["cam_uid"],
+                            "ip": ip,
+                            "user": cam["cam_usr"],
+                            "pass": cam["cam_psw"],
+                        }
+                    )
 
             return await self.async_step_select_device()
 
