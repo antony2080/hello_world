@@ -32,18 +32,27 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             onvif_hosts = await self.hass.async_add_executor_job(scan_onvif_hosts_sync)
             _LOGGER.info("Found %d ONVIF hosts on network", len(onvif_hosts))
             self.found_devices = []
+            # 準備所有任務
+            tasks = []
             for cam in camlist:
                 for ip in onvif_hosts:
-                    _LOGGER.info(
-                        "Trying to login to camera %s at IP %s",
-                        cam["cam_uid"],
-                        ip,
-                        cam["cam_usr"],
-                        cam["cam_psw"],
+                    _LOGGER.debug(
+                        "Queueing login attempt for cam %s at %s", cam["cam_uid"], ip
                     )
-                    info = await self.hass.async_add_executor_job(
-                        try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
+                    tasks.append(
+                        self.hass.async_add_executor_job(
+                            try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
+                        )
                     )
+            _LOGGER.info("Starting concurrent login attempts")
+            results = await asyncio.gather(*tasks)
+
+            # 結果排序回配
+            index = 0
+            for cam in camlist:
+                for _ in onvif_hosts:
+                    info = results[index]
+                    index += 1
                     if info and info.Manufacturer == "URMET" and "1099" in info.Model:
                         _LOGGER.info("Matched camera %s with IP %s", cam["cam_uid"], ip)
                         self.found_devices.append(
@@ -56,12 +65,12 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             }
                         )
 
-                        return await self.async_step_select_device()
+            return await self.async_step_select_device()
 
-                    return self.async_show_form(
-                        step_id="user",
-                        data_schema=self._get_login_schema(),
-                    )
+        return self.async_show_form(
+            step_id="user",
+            data_schema=self._get_login_schema(),
+        )
 
     async def async_step_select_device(self, user_input=None):
         options = {f"{dev['name']} ({dev['ip']})": dev for dev in self.found_devices}
