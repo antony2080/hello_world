@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from zeep.transports import Transport
 from requests import Session
 import socket
+import logging
 
 
 def extract_host_from_xaddr(xaddr):
@@ -13,7 +14,7 @@ def extract_host_from_xaddr(xaddr):
         return None
 
 
-def is_port_open(ip, port, timeout=0.5):
+def is_port_open(ip, port, timeout=1):
     """Quickly check if a TCP port is open."""
     try:
         with socket.create_connection((ip, port), timeout):
@@ -42,6 +43,7 @@ def scan_onvif_hosts_sync():
 
 def try_login_and_get_info(ip, username, password, timeout=2):
     if not (is_port_open(ip, 80) or is_port_open(ip, 554)):
+        logging.warning(f"Ports 80 and 554 are not open for IP: {ip}")
         return None
 
     try:
@@ -52,6 +54,8 @@ def try_login_and_get_info(ip, username, password, timeout=2):
             ip, 80, username, password, no_cache=True, transport=transport
         )
         info = cam.devicemgmt.GetDeviceInformation()
+        logging.info(f"Successfully retrieved device info for IP: {ip}")
         return info
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to login to ONVIF device at {ip}: {e}")
         return None
