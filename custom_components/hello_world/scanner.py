@@ -1,8 +1,6 @@
 from onvif import ONVIFCamera
 from wsdiscovery.discovery import ThreadedWSDiscovery
 from urllib.parse import urlparse
-from zeep.transports import Transport
-from requests import Session
 import socket
 
 
@@ -40,22 +38,13 @@ def scan_onvif_hosts_sync():
     return list(results)
 
 
-def try_login_and_get_info(ip, username, password, timeout=2):
+def try_login_and_get_info(ip, username, password):
     if not (is_port_open(ip, 80) or is_port_open(ip, 554)):
         return None
 
     try:
-        session = Session()
-        session.timeout = timeout
-        transport = Transport(session=session)
-        cam = ONVIFCamera(
-            ip, 80, username, password, no_cache=True, transport=transport
-        )
+        cam = ONVIFCamera(ip, 80, username, password)
         info = cam.devicemgmt.GetDeviceInformation()
-        if isinstance(info, dict):
-            info_obj = type("Info", (), info)  # 轉成屬性存取
-        else:
-            info_obj = info
-        return info_obj
-    except Exception:
+        return info
+    except Exception as e:
         return None
