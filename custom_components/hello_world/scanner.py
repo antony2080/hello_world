@@ -52,6 +52,10 @@ def try_login_and_get_info(ip, username, password, timeout=2):
             ip, 80, username, password, no_cache=True, transport=transport
         )
         info = cam.devicemgmt.GetDeviceInformation()
-        return info
+        if isinstance(info, dict):
+            info_obj = type("Info", (), info)  # 轉成屬性存取
+        else:
+            info_obj = info
+        return info_obj
     except Exception:
         return None
