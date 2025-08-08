@@ -1,6 +1,7 @@
 import aiohttp
 import xml.etree.ElementTree as ET
 from .const import URMET_CLOUD_BASE_URL
+import json
 
 
 class UrmetAPI:
@@ -49,4 +50,9 @@ class UrmetCloudAPI:
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(self.CAMLIST_URL, headers=headers) as resp:
-                return await resp.json()
+                text = await resp.text()
+
+                try:
+                    return json.loads(text)
+                except json.JSONDecodeError:
+                    raise Exception(f"Invalid JSON content:\n{text}")
