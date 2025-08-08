@@ -4,6 +4,9 @@ import asyncio
 from .const import DOMAIN
 from .api import UrmetCloudAPI
 from .scanner import scan_onvif_hosts_sync, try_login_and_get_info
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -23,20 +26,25 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data_schema=self._get_login_schema(),
                     errors={"base": "invalid_auth"},
                 )
-
+            _LOGGER.info("Login successful, fetching camera list")
             camlist = await api.get_camera_list()
+            _LOGGER.info("Retrieved %d cameras from cloud", len(camlist))
             onvif_hosts = await self.hass.async_add_executor_job(scan_onvif_hosts_sync)
+            _LOGGER.info("Found %d ONVIF hosts on network", len(onvif_hosts))
             self.found_devices = []
             # 準備所有任務
             tasks = []
             for cam in camlist:
                 for ip in onvif_hosts:
+                    _LOGGER.debug(
+                        "Queueing login attempt for cam %s at %s", cam["cam_uid"], ip
+                    )
                     tasks.append(
                         self.hass.async_add_executor_job(
                             try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
                         )
                     )
-
+            _LOGGER.info("Starting concurrent login attempts")
             results = await asyncio.gather(*tasks)
 
             # 結果排序回配
@@ -47,6 +55,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     info = results[index]
                     index += 1
                     if info and "1099" in info.Model:
+                        _LOGGER.info("Matched camera %s with IP %s", cam["cam_uid"], ip)
                         matched_ip = info  # 代表該 IP 有成功連線
                         self.found_devices.append(
                             {
