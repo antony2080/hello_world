@@ -40,9 +40,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         "Queueing login attempt for cam %s at %s", cam["cam_uid"], ip
                     )
                     tasks.append(
-                        self.hass.async_add_executor_job(
-                            try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
-                        )
+                        try_login_and_get_info(ip, cam["cam_usr"], cam["cam_psw"])
                     )
             _LOGGER.info("Starting concurrent login attempts")
             results = await asyncio.gather(*tasks)
