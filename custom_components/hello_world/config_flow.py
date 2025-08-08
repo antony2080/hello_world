@@ -32,7 +32,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             onvif_hosts = await self.hass.async_add_executor_job(scan_onvif_hosts_sync)
             _LOGGER.info("Found %d ONVIF hosts on network", len(onvif_hosts))
             self.found_devices = []
-            # 準備所有任務
+            # Prepare all tasks
             tasks = []
             for cam in camlist:
                 for ip in onvif_hosts:
@@ -40,7 +40,9 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         "Queueing login attempt for cam %s at %s", cam["cam_uid"], ip
                     )
                     tasks.append(
-                        try_login_and_get_info(ip, cam["cam_usr"], cam["cam_psw"])
+                        self.hass.async_add_executor_job(
+                            try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
+                        )
                     )
             _LOGGER.info("Starting concurrent login attempts")
             results = await asyncio.gather(*tasks)

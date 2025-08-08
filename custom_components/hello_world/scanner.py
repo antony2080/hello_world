@@ -1,9 +1,10 @@
 from onvif import ONVIFCamera
 from wsdiscovery.discovery import ThreadedWSDiscovery
 from urllib.parse import urlparse
+from requests import Session
+from zeep.transports import Transport
 import socket
 import logging
-import asyncio
 
 
 def extract_host_from_xaddr(xaddr):
@@ -13,7 +14,7 @@ def extract_host_from_xaddr(xaddr):
         return None
 
 
-def is_port_open(ip, port, timeout=1):
+def is_port_open(ip, port, timeout=0.5):
     """Quickly check if a TCP port is open."""
     try:
         with socket.create_connection((ip, port), timeout):
@@ -23,10 +24,6 @@ def is_port_open(ip, port, timeout=1):
 
 
 def scan_onvif_hosts_sync():
-    """
-    Synchronously scans for ONVIF hosts on the network.
-    Blocking! In async contexts, call via hass.async_add_executor_job or asyncio.to_thread.
-    """
     wsd = ThreadedWSDiscovery()
     wsd.start()
     services = wsd.searchServices()
@@ -40,17 +37,18 @@ def scan_onvif_hosts_sync():
     return list(results)
 
 
-async def try_login_and_get_info(ip, username, password):
+def try_login_and_get_info(ip, username, password, timeout=2):
     if not (is_port_open(ip, 80) or is_port_open(ip, 554)):
         logging.warning(f"Ports 80 and 554 are not open for IP: {ip}")
         return None
-
     try:
-        cam = ONVIFCamera(ip, 80, username, password, no_cache=True)
-        # Use asyncio to ensure the event loop is running
-        info = await asyncio.get_event_loop().run_in_executor(
-            None, cam.devicemgmt.GetDeviceInformation
+        session = Session()
+        session.timeout = timeout
+        transport = Transport(session=session)
+        cam = ONVIFCamera(
+            ip, 80, username, password, no_cache=True, transport=transport
         )
+        info = cam.devicemgmt.GetDeviceInformation()
         logging.info(f"Successfully retrieved device info for IP: {ip}")
         return info
     except Exception as e:
