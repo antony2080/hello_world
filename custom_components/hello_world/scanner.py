@@ -30,7 +30,7 @@ def scan_onvif_hosts_sync():
     return list(results)
 
 
-def try_login_and_get_info(ip, username, password, timeout=3):
+def try_login_and_get_info(ip, username, password, timeout=2):
     try:
         session = Session()
         session.timeout = timeout

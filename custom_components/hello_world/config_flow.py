@@ -1,5 +1,6 @@
 from homeassistant import config_entries
 import voluptuous as vol
+import asyncio
 from .const import DOMAIN
 from .api import UrmetCloudAPI
 from .scanner import scan_onvif_hosts_sync, try_login_and_get_info
@@ -26,12 +27,27 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             camlist = await api.get_camera_list()
             onvif_hosts = await self.hass.async_add_executor_job(scan_onvif_hosts_sync)
             self.found_devices = []
+            # 準備所有任務
+            tasks = []
             for cam in camlist:
                 for ip in onvif_hosts:
-                    info = await self.hass.async_add_executor_job(
-                        try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
+                    tasks.append(
+                        self.hass.async_add_executor_job(
+                            try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
+                        )
                     )
+
+            results = await asyncio.gather(*tasks)
+
+            # 結果排序回配
+            index = 0
+            for cam in camlist:
+                matched_ip = None
+                for _ in onvif_hosts:
+                    info = results[index]
+                    index += 1
                     if info and "1099" in info.Model:
+                        matched_ip = info  # 代表該 IP 有成功連線
                         self.found_devices.append(
                             {
                                 "name": cam["cam_name"],
@@ -42,6 +58,8 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             }
                         )
                         break
+                if matched_ip:
+                    continue
 
             return await self.async_step_select_device()
 
