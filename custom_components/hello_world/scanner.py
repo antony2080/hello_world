@@ -2,6 +2,9 @@ from onvif import ONVIFCamera
 from wsdiscovery.discovery import ThreadedWSDiscovery
 from urllib.parse import urlparse
 import socket
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def extract_host_from_xaddr(xaddr):
@@ -44,7 +47,9 @@ def try_login_and_get_info(ip, username, password):
 
     try:
         cam = ONVIFCamera(ip, 80, username, password)
+        _LOGGER.info("Connected to camera at %s", ip)
         info = cam.devicemgmt.GetDeviceInformation()
+        _LOGGER.info("Camera info: %s", info)
         return info
     except Exception as e:
         return None
