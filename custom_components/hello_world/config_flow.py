@@ -54,7 +54,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 for _ in onvif_hosts:
                     info = results[index]
                     index += 1
-                    if info and "1099" in info.Model:
+                    if info and info.Manufacturer == "URMET" and "1099" in info.Model:
                         _LOGGER.info("Matched camera %s with IP %s", cam["cam_uid"], ip)
                         matched_ip = info  # 代表該 IP 有成功連線
                         self.found_devices.append(
