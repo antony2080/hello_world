@@ -1,8 +1,6 @@
 from onvif import ONVIFCamera
 from wsdiscovery.discovery import ThreadedWSDiscovery
 from urllib.parse import urlparse
-from requests import Session
-from zeep.transports import Transport
 import socket
 import logging
 
@@ -42,12 +40,7 @@ def try_login_and_get_info(ip, username, password, timeout=2):
         logging.warning(f"Ports 80 and 554 are not open for IP: {ip}")
         return None
     try:
-        session = Session()
-        session.timeout = timeout
-        transport = Transport(session=session)
-        cam = ONVIFCamera(
-            ip, 80, username, password, no_cache=True, transport=transport
-        )
+        cam = ONVIFCamera(ip, 80, username, password)
         info = cam.devicemgmt.GetDeviceInformation()
         logging.info(f"Successfully retrieved device info for IP: {ip}")
         return info
