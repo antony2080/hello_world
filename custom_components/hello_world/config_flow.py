@@ -2,7 +2,7 @@ from homeassistant import config_entries
 import voluptuous as vol
 from .const import DOMAIN
 from .api import UrmetCloudAPI
-from .scanner import scan_onvif_hosts, try_login_and_get_info
+from .scanner import scan_onvif_hosts_sync, try_login_and_get_info
 
 
 class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -24,11 +24,13 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
 
             camlist = await api.get_camera_list()
-            onvif_hosts = scan_onvif_hosts()
+            onvif_hosts = await self.hass.async_add_executor_job(scan_onvif_hosts_sync)
             self.found_devices = []
             for cam in camlist:
                 for ip in onvif_hosts:
-                    info = try_login_and_get_info(ip, cam["cam_usr"], cam["cam_psw"])
+                    info = await self.hass.async_add_executor_job(
+                        try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
+                    )
                     if info and "1099" in info.Model:
                         self.found_devices.append(
                             {

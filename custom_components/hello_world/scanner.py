@@ -12,7 +12,11 @@ def extract_host_from_xaddr(xaddr):
         return None
 
 
-def scan_onvif_hosts():
+def scan_onvif_hosts_sync():
+    """
+    Synchronously scans for ONVIF hosts on the network.
+    Blocking! In async contexts, call via hass.async_add_executor_job or asyncio.to_thread.
+    """
     wsd = ThreadedWSDiscovery()
     wsd.start()
     services = wsd.searchServices()
