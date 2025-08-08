@@ -3,6 +3,7 @@ from wsdiscovery.discovery import ThreadedWSDiscovery
 from urllib.parse import urlparse
 from zeep.transports import Transport
 from requests import Session
+import socket
 
 
 def extract_host_from_xaddr(xaddr):
@@ -10,6 +11,15 @@ def extract_host_from_xaddr(xaddr):
         return urlparse(xaddr).hostname
     except Exception:
         return None
+
+
+def is_port_open(ip, port, timeout=0.5):
+    """Quickly check if a TCP port is open."""
+    try:
+        with socket.create_connection((ip, port), timeout):
+            return True
+    except (socket.timeout, OSError):
+        return False
 
 
 def scan_onvif_hosts_sync():
@@ -31,6 +41,9 @@ def scan_onvif_hosts_sync():
 
 
 def try_login_and_get_info(ip, username, password, timeout=2):
+    if not (is_port_open(ip, 80) or is_port_open(ip, 554)):
+        return None
+
     try:
         session = Session()
         session.timeout = timeout
