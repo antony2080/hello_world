@@ -40,20 +40,18 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         "Queueing login attempt for cam %s at %s", cam["cam_uid"], ip
                     )
                     tasks.append(
-                        self.hass.async_add_executor_job(
-                            try_login_and_get_info, ip, cam["cam_usr"], cam["cam_psw"]
-                        )
+                        try_login_and_get_info(ip, cam["cam_usr"], cam["cam_psw"], cam)
                     )
             _LOGGER.info("Starting concurrent login attempts")
-            results = await asyncio.gather(*tasks)
+            results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            # 結果排序回配
-            index = 0
-            for cam in camlist:
-                for _ in onvif_hosts:
-                    info = results[index]
-                    index += 1
-                    if info and info.Manufacturer == "URMET" and "1099" in info.Model:
+            # Process results
+            for result in results:
+                if isinstance(result, dict) and result.get("info"):
+                    info = result["info"]
+                    cam = result["cam"]
+                    ip = result["ip"]
+                    if info.Manufacturer == "URMET" and "1099" in info.Model:
                         _LOGGER.info("Matched camera %s with IP %s", cam["cam_uid"], ip)
                         self.found_devices.append(
                             {
