@@ -43,7 +43,7 @@ async def try_login_and_get_info(ip, username, password, cam):
         return None
     try:
         cam_device = ONVIFCamera(ip, 80, username, password)
-        info = cam_device.devicemgmt.GetDeviceInformation()
+        info = await cam_device.devicemgmt.GetDeviceInformation()
         logging.info(f"Successfully retrieved device info for IP: {ip}")
         return {"info": info, "cam": cam, "ip": ip}
     except Exception as e:
