@@ -51,11 +51,11 @@ async def try_login_and_get_info(ip, username, password, cam):
         await cam_device.close()
         return {"info": info, "cam": cam, "ip": ip}
     except Exception as e:
-        logging.error(f"Failed to login to ONVIF device at {ip}: {e}")
+        logging.warning(f"Failed to login to ONVIF device at {ip}: {e}")
         return None
     finally:
         if cam_device:
             try:
-                cam_device.close()
-            except Exception:
-                pass
+                await cam_device.close()
+            except Exception as e:
+                logging.warning(f"Failed to close ONVIF device at {ip}: {e}")
