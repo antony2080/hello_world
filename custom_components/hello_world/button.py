@@ -11,10 +11,20 @@ class ZoomButton(ButtonEntity):
     def __init__(self, hass, entry, direction):
         self._hass = hass
         self._direction = direction  # "ZoomIn" or "ZoomOut"
-        self._attr_name = f"Camera {direction}"
-        self._attr_unique_id = f"urmet_camera_{direction.lower()}"
+        self._attr_name = f"Camera {entry.data['uid']} {direction}"
+        self._attr_unique_id = f"urmet_camera_{entry.data['uid']}_{direction.lower()}"
         self._entry = entry
-        self._duration = 0.8
+        self._duration = 1.2
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {(DOMAIN, self._entry.data["uid"])},
+            "name": f"Camera {self._entry.data['uid']}",
+            "manufacturer": "URMET",
+            "model": "1099",
+            "sw_version": "1.0.0",
+        }
 
     async def async_press(self):
         data = self._hass.data[DOMAIN][self._entry.entry_id]

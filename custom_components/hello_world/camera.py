@@ -20,12 +20,22 @@ class UrmetCamera(Camera):
         self._username = data.get("username")
         self._password = data.get("password")
         self._stream_url = f"rtsp://{self._ip}:554/live/0/MAIN"
-        self._attr_name = f"Urmet Camera {self._uid}"
+        self._attr_name = f"Camera {self._uid}"
         self._attr_unique_id = f"urmet_camera_{entry.entry_id}"
 
     @property
     def unique_id(self):
         return self._attr_unique_id
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {(DOMAIN, self._entry.data["uid"])},  # 關鍵：唯一標識
+            "name": self._attr_name,
+            "manufacturer": "URMET",
+            "model": "1099",
+            "sw_version": "1.0.0",
+        }
 
     async def async_camera_image(self, width=None, height=None):
         # The width and height parameters are ignored as the camera does not support resizing.
