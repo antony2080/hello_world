@@ -20,7 +20,7 @@ class UrmetCamera(Camera):
         self._username = data.get("username")
         self._password = data.get("password")
         self._stream_url = f"rtsp://{self._ip}:554/live/0/MAIN"
-        self._attr_name = f"Camera {self._uid}"
+        self._attr_name = f"Camera {self._entry.data['name']}"
         self._attr_unique_id = f"urmet_camera_{entry.entry_id}"
 
     @property
@@ -31,7 +31,7 @@ class UrmetCamera(Camera):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self._entry.data["uid"])},  # 關鍵：唯一標識
-            "name": self._attr_name,
+            "name": f"Camera {self._entry.data['name']}",
             "manufacturer": "URMET",
             "model": "1099",
             "sw_version": "1.0.0",
