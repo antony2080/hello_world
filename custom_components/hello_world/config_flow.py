@@ -17,7 +17,6 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.httpd_username = user_input.get("httpd_username")
             self.httpd_password = user_input.get("httpd_password")
 
-            # Use UrmetCloudAPI to login and get camera list
             api = UrmetCloudAPI(self.httpd_username, self.httpd_password)
             login_ok = await api.login()
             if not login_ok:
@@ -26,7 +25,6 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data_schema=self._get_login_schema(),
                     errors={"base": "invalid_auth"},
                 )
-            _LOGGER.info("Login successful, fetching camera list")
             camlist = await api.get_camera_list()
             _LOGGER.info("Retrieved %d cameras from cloud", len(camlist))
             onvif_hosts = await self.hass.async_add_executor_job(scan_onvif_hosts_sync)

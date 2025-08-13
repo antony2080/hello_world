@@ -3,10 +3,18 @@
   "config": {
     "step": {
       "user": {
-        "title": "Setup Hello World",
-        "description": "No config needed.",
-        "data": {}
+        "title": "Urmet Setup",
+        "description": "Use your UrmetCloud credentials to Login.",
+        "data": {
+          "httpd_username": "username",
+          "httpd_password": "password"
+        }
       }
+    },
+    "error": {
+      "invalid_auth": "Invalid authentication credentials.",
+      "cannot_connect": "Cannot connect to the Hello World service.",
+      "unknown": "An unknown error occurred."
     }
   }
 }
