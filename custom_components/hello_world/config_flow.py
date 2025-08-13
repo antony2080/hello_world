@@ -77,6 +77,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_create_entry(
                 title=f"{selected['name']} ({selected['ip']})",
                 data={
+                    "name": selected["name"],
                     "ip": selected["ip"],
                     "uid": selected["uid"],
                     "username": selected["user"],
