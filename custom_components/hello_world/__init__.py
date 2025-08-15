@@ -20,7 +20,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     # Forward the entry setup to the camera, button, and select platforms
     await hass.config_entries.async_forward_entry_setups(
-        entry, ["camera", "button", "select"]
+        entry, ["camera", "button", "select", "switch"]
     )
 
     return True
