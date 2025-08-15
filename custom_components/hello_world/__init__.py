@@ -18,7 +18,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "password": entry.data["password"],
     }
 
-    # Forward the entry setup to the camera and button platforms
-    await hass.config_entries.async_forward_entry_setups(entry, ["camera", "button"])
+    # Forward the entry setup to the camera, button, and select platforms
+    await hass.config_entries.async_forward_entry_setups(
+        entry, ["camera", "button", "select"]
+    )
 
     return True
