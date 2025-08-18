@@ -5,14 +5,14 @@ import json
 
 
 class CameraLocalAPI:
-    def __init__(self, host):
+    def __init__(self, host, username, password):
         self._host = host
+        self._auth = aiohttp.BasicAuth(username, password)
 
-    async def get_alarm_enabled(self, username, password):
+    async def get_alarm_enabled(self):
         url = f"http://{self._host}/System/AudioAlarmConfig"
-        auth = aiohttp.BasicAuth(username, password)
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, auth=auth) as resp:
+            async with session.get(url, auth=self._auth) as resp:
                 if resp.status == 200:
                     xml = await resp.text()
                     try:
