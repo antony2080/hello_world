@@ -23,6 +23,20 @@ class CameraLocalAPI:
                         pass
         return None
 
+    async def get_ircut_mode(self):
+        url = f"http://{self._host}/Images/1/IrCutFilter"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, auth=self._auth) as resp:
+                if resp.status == 200:
+                    xml = await resp.text()
+                    try:
+                        root = ET.fromstring(xml)
+                        mode = root.findtext("Mode")
+                        return mode
+                    except Exception:
+                        pass
+        return None
+
 
 class UrmetCloudAPI:
     LOGIN_URL = f"{URMET_CLOUD_BASE_URL}/tool/index.php"
