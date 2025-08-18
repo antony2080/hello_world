@@ -62,9 +62,12 @@ class IrCutSelect(SelectEntity):
         username = data.get("username")
         password = data.get("password")
         api = CameraLocalAPI(ip, username, password)
-        option = await api.get_ircut_mode()
-        if option is not None:
-            self._current_option = option
+        mode = await api.get_ircut_mode()
+        if mode is not None:
+            if mode == "passivity":
+                self._current_option = "auto"
+            else:
+                self._current_option = mode
 
 
 async def async_setup_entry(
