@@ -4,21 +4,26 @@ from .const import URMET_CLOUD_BASE_URL
 import json
 
 
-class UrmetAPI:
+class CameraLocalAPI:
     def __init__(self, host):
         self._host = host
-        self._auth = aiohttp.BasicAuth("admin", "admin")
 
-    async def get_motion_detected(self):
-        url = f"http://{self._host}/Alarm/MotionStatus"
+    async def get_alarm_enabled(self, username, password):
+        url = f"http://{self._host}/System/AudioAlarmConfig"
+        auth = aiohttp.BasicAuth(username, password)
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, auth=self._auth) as resp:
-                xml = await resp.text()
-                root = ET.fromstring(xml)
-                return root.findtext(".//Motion") == "on"
+            async with session.get(url, auth=auth) as resp:
+                if resp.status == 200:
+                    xml = await resp.text()
+                    try:
+                        root = ET.fromstring(xml)
+                        enable = root.findtext("Enable")
+                        return enable and enable.lower() == "true"
+                    except Exception:
+                        pass
+        return None
 
 
-# Urmet Cloud API for async login and camera list retrieval
 class UrmetCloudAPI:
     LOGIN_URL = f"{URMET_CLOUD_BASE_URL}/tool/index.php"
     CAMLIST_URL = f"{URMET_CLOUD_BASE_URL}/tool/webapi/private/index.php/mycamlist"

@@ -3,6 +3,7 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from .api import CameraLocalAPI
 from .const import DOMAIN
 
 
@@ -55,6 +56,16 @@ class AudioAlarmSwitch(SwitchEntity):
                 if resp.status == 200:
                     self._is_on = enable
         self.async_write_ha_state()
+
+    async def async_update(self):
+        data = self._hass.data[DOMAIN][self._entry.entry_id]
+        ip = data["ip"]
+        username = data.get("username")
+        password = data.get("password")
+        api = CameraLocalAPI(ip, username, password)
+        enabled = await api.get_alarm_enabled()
+        if enabled is not None:
+            self._is_on = enabled
 
 
 async def async_setup_entry(

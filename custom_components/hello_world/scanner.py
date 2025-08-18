@@ -1,7 +1,6 @@
 from onvif import ONVIFCamera
 from wsdiscovery.discovery import ThreadedWSDiscovery
 from urllib.parse import urlparse
-import asyncio
 import logging
 import socket
 
