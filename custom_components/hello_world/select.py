@@ -32,6 +32,16 @@ class IrCutSelect(SelectEntity):
             "sw_version": "1.0.0",
         }
 
+    @property
+    def icon(self):
+        if self._current_option == "day":
+            return "mdi:white-balance-sunny"
+        elif self._current_option == "night":
+            return "mdi:weather-night"
+        elif self._current_option == "auto":
+            return "mdi:theme-light-dark"
+        return "mdi:camera"
+
     async def async_select_option(self, option: str):
         data = self._hass.data[DOMAIN][self._entry.entry_id]
         ip = data["ip"]
