@@ -1,4 +1,4 @@
-from homeassistant.components.camera import Camera
+from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -10,6 +10,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class UrmetCamera(Camera):
+    attr_supported_features = CameraEntityFeature.STREAM
+
     def __init__(self, hass, entry):
         super().__init__()
         self._hass = hass
