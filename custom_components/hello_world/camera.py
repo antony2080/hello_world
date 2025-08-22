@@ -5,6 +5,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 import logging
 import aiohttp
+from haffmpeg.camera import CameraMjpeg
+from homeassistant.components.ffmpeg import CONF_EXTRA_ARGUMENTS, get_ffmpeg_manager
+from homeassistant.helpers.aiohttp_client import async_aiohttp_proxy_stream
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,6 +67,27 @@ class UrmetCamera(Camera):
     async def stream_source(self):
         _LOGGER.info("Providing stream URL: %s", self._stream_url)
         return self._stream_url
+
+    async def handle_async_mjpeg_stream(self, request):
+        """Generate an HTTP MJPEG stream from the camera."""
+        _LOGGER.debug("Handling MJPEG stream from camera '%s'", self._attr_name)
+        ffmpeg_manager = get_ffmpeg_manager(self._hass)
+        stream = CameraMjpeg(ffmpeg_manager.binary)
+
+        try:
+            await stream.open_camera(
+                self._stream_url,
+                extra_cmd=self._entry.options.get(CONF_EXTRA_ARGUMENTS),
+            )
+            stream_reader = await stream.get_reader()
+            return await async_aiohttp_proxy_stream(
+                self._hass,
+                request,
+                stream_reader,
+                ffmpeg_manager.ffmpeg_stream_content_type,
+            )
+        finally:
+            await stream.close()
 
 
 async def async_setup_entry(
