@@ -4,6 +4,7 @@ from wsdiscovery.qname import QName
 from wsdiscovery.scope import Scope
 from urllib.parse import urlparse
 import logging
+from .model import DeviceInfo
 
 
 def extract_host_from_xaddr(xaddr):
@@ -43,8 +44,17 @@ async def try_login_and_get_info(ip, username, password, cam):
         devicemgmt = await cam_device.create_devicemgmt_service()
         info = await devicemgmt.GetDeviceInformation()
         logging.info(f"Successfully retrieved device info for IP: {ip}")
+
+        device_info = DeviceInfo(
+            manufacturer=info.Manufacturer,
+            model=info.Model,
+            fw_version=info.FirmwareVersion,
+            serial_number=info.SerialNumber,
+            mac=None,
+        )
+
         await cam_device.close()
-        return {"info": info, "cam": cam, "ip": ip}
+        return {"info": device_info, "cam": cam, "ip": ip}
     except Exception as e:
         logging.warning(f"Failed to login to ONVIF device at {ip}: {e}")
         return None

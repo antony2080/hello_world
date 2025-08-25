@@ -49,7 +49,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     info = result["info"]
                     cam = result["cam"]
                     ip = result["ip"]
-                    if info.Manufacturer == "URMET" and "1099" in info.Model:
+                    if info.manufacturer == "URMET" and "1099" in info.model:
                         _LOGGER.info("Matched camera %s with IP %s", cam["cam_uid"], ip)
                         self.found_devices.append(
                             {
@@ -58,6 +58,13 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                                 "ip": ip,
                                 "user": cam["cam_usr"],
                                 "pass": cam["cam_psw"],
+                                "device_info": {
+                                    "manufacturer": info.manufacturer,
+                                    "model": info.model,
+                                    "fw_version": info.fw_version,
+                                    "serial_number": info.serial_number,
+                                    "mac": info.mac,
+                                },
                             }
                         )
 
@@ -82,6 +89,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "uid": selected["uid"],
                     "username": selected["user"],
                     "password": selected["pass"],
+                    "device_info": selected["device_info"],
                 },
             )
 

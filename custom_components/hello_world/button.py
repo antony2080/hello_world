@@ -14,6 +14,7 @@ class ZoomButton(ButtonEntity):
         self._attr_name = f"Camera {entry.data['name']} {direction}"
         self._attr_unique_id = f"urmet_camera_{entry.data['name']}_{direction.lower()}"
         self._entry = entry
+        self._device_info = self._entry.data.get("device_info", {})
         self._duration = 1.2
 
     @property
@@ -21,9 +22,9 @@ class ZoomButton(ButtonEntity):
         return {
             "identifiers": {(DOMAIN, self._entry.data["uid"])},
             "name": f"Camera {self._entry.data['name']}",
-            "manufacturer": "URMET",
-            "model": "1099",
-            "sw_version": "1.0.0",
+            "manufacturer": self._device_info.get("manufacturer", "URMET"),
+            "model": self._device_info.get("model", "1099"),
+            "sw_version": self._device_info.get("sw_version", "1.0.0"),
         }
 
     async def async_press(self):
