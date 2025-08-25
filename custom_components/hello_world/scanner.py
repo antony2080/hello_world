@@ -1,8 +1,9 @@
 from onvif import ONVIFCamera
 from wsdiscovery.discovery import ThreadedWSDiscovery
+from wsdiscovery.qname import QName
+from wsdiscovery.scope import Scope
 from urllib.parse import urlparse
 import logging
-import socket
 
 
 def extract_host_from_xaddr(xaddr):
@@ -13,9 +14,18 @@ def extract_host_from_xaddr(xaddr):
 
 
 def scan_onvif_hosts_sync():
-    wsd = ThreadedWSDiscovery()
+    wsd = ThreadedWSDiscovery(ttl=4, relates_to=True)
     wsd.start()
-    services = wsd.searchServices()
+    services = wsd.searchServices(
+        types=[
+            QName(
+                "http://www.onvif.org/ver10/network/wsdl",
+                "NetworkVideoTransmitter",
+                "dp0",
+            )
+        ],
+        scopes=[Scope("onvif://www.onvif.org/Profile/Streaming")],
+    )
     results = set()
     for service in services:
         for xaddr in service.getXAddrs():
@@ -26,21 +36,7 @@ def scan_onvif_hosts_sync():
     return list(results)
 
 
-def is_port_open(ip, port, timeout=0.5):
-    """Quickly check if a TCP port is open."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.settimeout(timeout)
-        try:
-            sock.connect((ip, port))
-            return True
-        except (socket.timeout, ConnectionRefusedError, OSError):
-            return False
-
-
 async def try_login_and_get_info(ip, username, password, cam):
-    if not (is_port_open(ip, 80) or is_port_open(ip, 554)):
-        logging.warning(f"Ports 80 and 554 are not open for IP: {ip}")
-        return None
     cam_device = None
     try:
         cam_device = ONVIFCamera(ip, 80, username, password)
