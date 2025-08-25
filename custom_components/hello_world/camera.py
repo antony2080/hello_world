@@ -40,7 +40,7 @@ class UrmetCamera(Camera):
             "name": f"Camera {self._entry.data['name']}",
             "manufacturer": self._device_info.get("manufacturer", "URMET"),
             "model": self._device_info.get("model", "1099"),
-            "sw_version": self._device_info.get("sw_version", "1.0.0"),
+            "sw_version": self._device_info.get("fw_version", "1.0.0"),
         }
 
     async def async_camera_image(self, width=None, height=None):
