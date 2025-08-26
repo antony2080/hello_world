@@ -1,5 +1,4 @@
 import aiohttp
-import xml.etree.ElementTree as ET
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -123,18 +122,10 @@ class MotionSwitch(SwitchEntity):
         ip = data["ip"]
         username = data.get("username")
         password = data.get("password")
-        auth = aiohttp.BasicAuth(username, password)
-        url = f"http://{ip}/Pictures/1/Motion"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, auth=auth) as resp:
-                if resp.status == 200:
-                    xml = await resp.text()
-                    try:
-                        root = ET.fromstring(xml)
-                        enable = root.findtext("Enable")
-                        self._is_on = enable and enable.lower() == "true"
-                    except Exception:
-                        pass
+        api = CameraLocalAPI(ip, username, password)
+        enabled = await api.get_motion_enabled()
+        if enabled is not None:
+            self._is_on = enabled
 
 
 async def async_setup_entry(

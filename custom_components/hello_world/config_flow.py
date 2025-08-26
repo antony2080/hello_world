@@ -14,10 +14,10 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None):
         if user_input is not None:
-            self.httpd_username = user_input.get("httpd_username")
-            self.httpd_password = user_input.get("httpd_password")
+            username = user_input.get("httpd_username")
+            password = user_input.get("httpd_password")
 
-            api = UrmetCloudAPI(self.httpd_username, self.httpd_password)
+            api = UrmetCloudAPI(username, password)
             login_ok = await api.login()
             if not login_ok:
                 return self.async_show_form(

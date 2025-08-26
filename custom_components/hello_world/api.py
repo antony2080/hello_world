@@ -23,6 +23,20 @@ class CameraLocalAPI:
                         pass
         return None
 
+    async def get_motion_enabled(self):
+        url = f"http://{self._host}/Pictures/1/Motion"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, auth=self._auth) as resp:
+                if resp.status == 200:
+                    xml = await resp.text()
+                    try:
+                        root = ET.fromstring(xml)
+                        enable = root.findtext("Enable")
+                        return enable and enable.lower() == "true"
+                    except Exception:
+                        pass
+        return None
+
     async def get_ircut_mode(self):
         url = f"http://{self._host}/Images/1/IrCutFilter"
         async with aiohttp.ClientSession() as session:
