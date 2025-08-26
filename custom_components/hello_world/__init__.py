@@ -16,6 +16,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "uid": entry.data["uid"],
         "username": entry.data["username"],
         "password": entry.data["password"],
+        "device_info": entry.data.get("device_info", {}),
     }
 
     # Forward the entry setup to the camera, button, and select platforms
