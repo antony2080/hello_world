@@ -84,9 +84,18 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_select_device(self, user_input=None):
         options = {f"{dev['name']} ({dev['ip']})": dev for dev in self.found_devices}
 
+        # Convert selected dictionary to Camera object before registering
         if user_input:
             selected_label = user_input["device"]
             selected = options[selected_label]
+
+            # Convert selected to a Camera object
+            camera_obj = Camera(
+                cam_name=selected["name"],
+                cam_uid=selected["uid"],
+                cam_usr=selected["user"],
+                cam_psw=selected["pass"],
+            )
 
             # Register the selected device in the device registry
             device_info = DeviceInfo(
@@ -96,7 +105,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 serial_number=selected["device_info"]["serial_number"],
                 mac=selected["device_info"]["mac"],
             )
-            await register_device_in_registry(self.hass, selected, device_info)
+            await register_device_in_registry(self.hass, camera_obj, device_info)
 
             return self.async_create_entry(
                 title=f"{selected['name']} ({selected['ip']})",
