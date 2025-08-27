@@ -3,7 +3,12 @@ import voluptuous as vol
 import asyncio
 from .const import DOMAIN
 from .api import UrmetCloudAPI
-from .scanner import scan_onvif_hosts_sync, try_login_and_get_info
+from .scanner import (
+    scan_onvif_hosts_sync,
+    try_login_and_get_info,
+    register_device_in_registry,
+)
+from .model import DeviceInfo  # Ensure DeviceInfo is imported
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,19 +39,13 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             tasks = []
             for cam in camlist:
                 for ip in onvif_hosts:
-                    _LOGGER.debug(
-                        "Queueing login attempt for cam %s at %s", cam["cam_uid"], ip
-                    )
-                    tasks.append(
-                        try_login_and_get_info(ip, cam["cam_usr"], cam["cam_psw"], cam)
-                    )
-            _LOGGER.info("Starting concurrent login attempts")
+                    tasks.append(try_login_and_get_info(ip, cam))
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Process results
             for result in results:
-                if isinstance(result, dict) and result.get("info"):
-                    info = result["info"]
+                if isinstance(result, dict) and result.get("device_info"):
+                    info = result["device_info"]
                     cam = result["cam"]
                     ip = result["ip"]
                     if info.manufacturer == "URMET" and "1099" in info.model:
@@ -55,9 +54,9 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             {
                                 "name": cam["cam_name"],
                                 "uid": cam["cam_uid"],
-                                "ip": ip,
                                 "user": cam["cam_usr"],
                                 "pass": cam["cam_psw"],
+                                "ip": ip,
                                 "device_info": {
                                     "manufacturer": info.manufacturer,
                                     "model": info.model,
@@ -81,6 +80,17 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input:
             selected_label = user_input["device"]
             selected = options[selected_label]
+
+            # Register the selected device in the device registry
+            device_info = DeviceInfo(
+                manufacturer=selected["device_info"]["manufacturer"],
+                model=selected["device_info"]["model"],
+                fw_version=selected["device_info"]["fw_version"],
+                serial_number=selected["device_info"]["serial_number"],
+                mac=selected["device_info"]["mac"],
+            )
+            await register_device_in_registry(self.hass, selected, device_info)
+
             return self.async_create_entry(
                 title=f"{selected['name']} ({selected['ip']})",
                 data={
