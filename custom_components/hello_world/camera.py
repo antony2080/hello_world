@@ -3,6 +3,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
+from .model import DeviceInfo
 import logging
 import aiohttp
 from haffmpeg.camera import CameraMjpeg
@@ -27,6 +28,18 @@ class UrmetCamera(Camera):
         self._stream_url = f"rtsp://{self._ip}:554/live/0/MAIN"
         self._attr_name = f"Camera {self._entry.data['name']}"
         self._attr_unique_id = f"urmet_camera_{entry.entry_id}"
+        # store device info for later
+        self._device_info = DeviceInfo(
+            identifiers={(DOMAIN, self._uid or entry.entry_id)},
+            manufacturer=data.get("manufacturer", "Urmet"),
+            model=data.get("model", "Camera"),
+            name=self._attr_name,
+            sw_version=data.get("fw_version"),
+        )
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return self._device_info
 
     @property
     def unique_id(self):
