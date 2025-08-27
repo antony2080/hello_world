@@ -14,13 +14,5 @@ class DeviceInfo:
 class Camera:
     cam_uid: str
     cam_name: str
-    cam_desc: str
-    cam_psw: str
-    cam_position: str
-    cam_permission: str
-    app_lite: str
-    dev_type: str
-    iotc_type: str
-    device_acl: str
-    nvr_port: str
     cam_usr: str
+    cam_psw: str
