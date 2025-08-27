@@ -27,7 +27,6 @@ class UrmetCamera(Camera):
         self._stream_url = f"rtsp://{self._ip}:554/live/0/MAIN"
         self._attr_name = f"Camera {self._entry.data['name']}"
         self._attr_unique_id = f"urmet_camera_{entry.entry_id}"
-        self._device_info = self._entry.data.get("device_info", {})
 
     @property
     def unique_id(self):
@@ -38,9 +37,9 @@ class UrmetCamera(Camera):
         return {
             "identifiers": {(DOMAIN, self._entry.data["uid"])},  # 關鍵：唯一標識
             "name": f"Camera {self._entry.data['name']}",
-            "manufacturer": self._device_info.get("manufacturer", "URMET"),
-            "model": self._device_info.get("model", "1099"),
-            "sw_version": self._device_info.get("fw_version", "1.0.0"),
+            "manufacturer": self._entry.data.get("manufacturer", "Urmet"),
+            "model": self._entry.data.get("model", "Camera"),
+            "sw_version": self._entry.data.get("fw_version", "1.0.0"),
         }
 
     async def async_camera_image(self, width=None, height=None):

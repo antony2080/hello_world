@@ -89,7 +89,9 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "uid": selected["uid"],
                     "username": selected["user"],
                     "password": selected["pass"],
-                    "device_info": selected["device_info"],
+                    "manufacturer": selected["device_info"]["manufacturer"],
+                    "model": selected["device_info"]["model"],
+                    "fw_version": selected["device_info"]["fw_version"],
                 },
             )
 
