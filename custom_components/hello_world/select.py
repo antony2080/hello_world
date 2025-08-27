@@ -16,11 +16,22 @@ class IrCutSelect(SelectEntity):
         self._attr_name = f"Camera {entry.data['name']} Mode"
         self._attr_unique_id = f"ircut_{entry.entry_id}"
         self._attr_options = list(IR_MODES.values())
+        self._device_info = self._entry.data.get("device_info", {})
         self._current_option = IR_MODES["day"]  # Default, or fetch from device
 
     @property
     def current_option(self):
         return self._current_option
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {(DOMAIN, self._entry.data["uid"])},
+            "name": f"Camera {self._entry.data['name']}",
+            "manufacturer": self._device_info.get("manufacturer", "URMET"),
+            "model": self._device_info.get("model", "1099"),
+            "sw_version": self._device_info.get("fw_version", "1.0.0"),
+        }
 
     @property
     def icon(self):

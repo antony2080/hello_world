@@ -13,11 +13,22 @@ class AudioAlarmSwitch(SwitchEntity):
         self._entry = entry
         self._attr_name = f"Camera {entry.data['name']} Alarm"
         self._attr_unique_id = f"alarm_{entry.entry_id}"
+        self._device_info = self._entry.data.get("device_info", {})
         self._is_on = False
 
     @property
     def is_on(self):
         return self._is_on
+
+    @property
+    def device_info(self):
+        return {
+            "identifiers": {(DOMAIN, self._entry.data["uid"])},
+            "name": f"Camera {self._entry.data['name']}",
+            "manufacturer": self._device_info.get("manufacturer", "URMET"),
+            "model": self._device_info.get("model", "1099"),
+            "sw_version": self._device_info.get("fw_version", "1.0.0"),
+        }
 
     async def async_turn_on(self, **kwargs):
         await self._set_alarm(True)
