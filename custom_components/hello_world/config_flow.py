@@ -8,7 +8,7 @@ from .scanner import (
     try_login_and_get_info,
     register_device_in_registry,
 )
-from .model import DeviceInfo  # Ensure DeviceInfo is imported
+from .model import DeviceInfo, Camera  # Ensure DeviceInfo and Camera are imported
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,8 +38,14 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Prepare all tasks
             tasks = []
             for cam in camlist:
+                camera_obj = Camera(
+                    cam_name=cam["cam_name"],
+                    cam_uid=cam["cam_uid"],
+                    cam_usr=cam["cam_usr"],
+                    cam_psw=cam["cam_psw"],
+                )
                 for ip in onvif_hosts:
-                    tasks.append(try_login_and_get_info(ip, cam))
+                    tasks.append(try_login_and_get_info(ip, camera_obj))
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             # Process results
