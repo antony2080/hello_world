@@ -39,10 +39,12 @@ def scan_onvif_hosts_sync():
     return list(results)
 
 
-async def register_device_in_registry(hass, cam: Camera, device_info: DeviceInfo):
+async def register_device_in_registry(
+    hass, entry_id, cam: Camera, device_info: DeviceInfo
+):
     device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
-        config_entry_id=cam.cam_uid,
+        config_entry_id=entry_id,
         connections={(dr.CONNECTION_NETWORK_MAC, device_info.mac)},
         identifiers={(DOMAIN, cam.cam_uid)},
         manufacturer=device_info.manufacturer,

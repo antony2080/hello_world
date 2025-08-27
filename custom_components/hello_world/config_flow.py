@@ -3,12 +3,8 @@ import voluptuous as vol
 import asyncio
 from .const import DOMAIN
 from .api import UrmetCloudAPI
-from .scanner import (
-    scan_onvif_hosts_sync,
-    try_login_and_get_info,
-    register_device_in_registry,
-)
-from .model import DeviceInfo, Camera  # Ensure DeviceInfo and Camera are imported
+from .scanner import scan_onvif_hosts_sync, try_login_and_get_info
+from .model import Camera
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -84,29 +80,20 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_select_device(self, user_input=None):
         options = {f"{dev['name']} ({dev['ip']})": dev for dev in self.found_devices}
 
-        # Convert selected dictionary to Camera object before registering
         if user_input:
             selected_label = user_input["device"]
             selected = options[selected_label]
 
-            # Convert selected to a Camera object
-            camera_obj = Camera(
-                cam_name=selected["name"],
-                cam_uid=selected["uid"],
-                cam_usr=selected["user"],
-                cam_psw=selected["pass"],
-            )
+            # Prepare device_info for later use in async_setup_entry
+            device_info = {
+                "manufacturer": selected["device_info"]["manufacturer"],
+                "model": selected["device_info"]["model"],
+                "fw_version": selected["device_info"]["fw_version"],
+                "serial_number": selected["device_info"]["serial_number"],
+                "mac": selected["device_info"]["mac"],
+            }
 
-            # Register the selected device in the device registry
-            device_info = DeviceInfo(
-                manufacturer=selected["device_info"]["manufacturer"],
-                model=selected["device_info"]["model"],
-                fw_version=selected["device_info"]["fw_version"],
-                serial_number=selected["device_info"]["serial_number"],
-                mac=selected["device_info"]["mac"],
-            )
-            await register_device_in_registry(self.hass, camera_obj, device_info)
-
+            # Create the configuration entry
             return self.async_create_entry(
                 title=f"{selected['name']} ({selected['ip']})",
                 data={
@@ -115,7 +102,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "uid": selected["uid"],
                     "username": selected["user"],
                     "password": selected["pass"],
-                    "device_info": selected["device_info"],
+                    "device_info": device_info,
                 },
             )
 
