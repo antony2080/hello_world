@@ -43,6 +43,14 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     cam_uid=cam["cam_uid"],
                     cam_usr=cam["cam_usr"],
                     cam_psw=cam["cam_psw"],
+                    cam_desc=cam.get("cam_desc", ""),
+                    cam_position=cam.get("cam_position", ""),
+                    cam_permission=cam.get("cam_permission", ""),
+                    app_lite=cam.get("app_lite", False),
+                    dev_type=cam.get("dev_type", ""),
+                    iotc_type=cam.get("iotc_type", ""),
+                    device_acl=cam.get("device_acl", ""),
+                    nvr_port=cam.get("nvr_port", 0),
                 )
                 for ip in onvif_hosts:
                     tasks.append(try_login_and_get_info(ip, camera_obj))
