@@ -92,6 +92,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "manufacturer": selected["device_info"]["manufacturer"],
                     "model": selected["device_info"]["model"],
                     "fw_version": selected["device_info"]["fw_version"],
+                    "mac": selected["device_info"]["mac"],
                 },
             )
 

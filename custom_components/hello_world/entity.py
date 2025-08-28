@@ -1,4 +1,5 @@
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from .const import DOMAIN
 
 
@@ -13,6 +14,7 @@ class OnvifBaseEntity(Entity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self._entry.data["uid"])},
+            "connections": {(CONNECTION_NETWORK_MAC, self._entry.data.get("mac"))},
             "name": f"Camera {self._entry.data['name']}",
             "manufacturer": self._entry.data.get("manufacturer", "Urmet"),
             "model": self._entry.data.get("model", "Camera"),

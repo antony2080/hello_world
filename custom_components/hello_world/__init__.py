@@ -19,6 +19,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "manufacturer": entry.data.get("manufacturer"),
         "model": entry.data.get("model"),
         "fw_version": entry.data.get("fw_version"),
+        "mac": entry.data.get("mac"),
     }
 
     # Forward the entry setup to the camera, button, and select platforms
