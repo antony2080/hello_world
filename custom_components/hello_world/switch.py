@@ -3,14 +3,14 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .api import CameraLocalAPI
 from .const import DOMAIN
+from .api import CameraLocalAPI
+from .entity import OnvifBaseEntity
 
 
-class AudioAlarmSwitch(SwitchEntity):
+class AudioAlarmSwitch(OnvifBaseEntity, SwitchEntity):
     def __init__(self, hass, entry):
-        self._hass = hass
-        self._entry = entry
+        super().__init__(hass, entry)
         self._attr_name = f"Camera {entry.data['name']} Alarm"
         self._attr_unique_id = f"alarm_{entry.entry_id}"
         self._is_on = False
@@ -18,16 +18,6 @@ class AudioAlarmSwitch(SwitchEntity):
     @property
     def is_on(self):
         return self._is_on
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self._entry.data["uid"])},
-            "name": f"Camera {self._entry.data['name']}",
-            "manufacturer": self._entry.data.get("manufacturer", "Urmet"),
-            "model": self._entry.data.get("model", "Camera"),
-            "sw_version": self._entry.data.get("fw_version", "1.0.0"),
-        }
 
     async def async_turn_on(self, **kwargs):
         await self._set_alarm(True)
@@ -70,8 +60,7 @@ class AudioAlarmSwitch(SwitchEntity):
 
 class MotionSwitch(SwitchEntity):
     def __init__(self, hass, entry):
-        self._hass = hass
-        self._entry = entry
+        super().__init__(hass, entry)
         self._attr_name = f"Camera {entry.data['name']} Motion"
         self._attr_unique_id = f"motion_{entry.entry_id}"
         self._is_on = False
@@ -79,16 +68,6 @@ class MotionSwitch(SwitchEntity):
     @property
     def is_on(self):
         return self._is_on
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self._entry.data["uid"])},
-            "name": f"Camera {self._entry.data['name']}",
-            "manufacturer": self._entry.data.get("manufacturer", "Urmet"),
-            "model": self._entry.data.get("model", "Camera"),
-            "sw_version": self._entry.data.get("fw_version", "1.0.0"),
-        }
 
     async def async_turn_on(self, **kwargs):
         await self._set_motion(True)

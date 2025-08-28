@@ -55,9 +55,9 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             {
                                 "name": cam["cam_name"],
                                 "uid": cam["cam_uid"],
-                                "ip": ip,
                                 "user": cam["cam_usr"],
                                 "pass": cam["cam_psw"],
+                                "ip": ip,
                                 "device_info": {
                                     "manufacturer": info.manufacturer,
                                     "model": info.model,
@@ -85,10 +85,10 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 title=f"{selected['name']} ({selected['ip']})",
                 data={
                     "name": selected["name"],
-                    "ip": selected["ip"],
                     "uid": selected["uid"],
                     "username": selected["user"],
                     "password": selected["pass"],
+                    "ip": selected["ip"],
                     "manufacturer": selected["device_info"]["manufacturer"],
                     "model": selected["device_info"]["model"],
                     "fw_version": selected["device_info"]["fw_version"],

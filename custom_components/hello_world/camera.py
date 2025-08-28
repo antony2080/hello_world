@@ -1,24 +1,23 @@
+import aiohttp
 from homeassistant.components.camera import Camera, CameraEntityFeature
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .const import DOMAIN
-import logging
-import aiohttp
 from haffmpeg.camera import CameraMjpeg
 from homeassistant.components.ffmpeg import CONF_EXTRA_ARGUMENTS, get_ffmpeg_manager
 from homeassistant.helpers.aiohttp_client import async_aiohttp_proxy_stream
+from .const import DOMAIN
+from .entity import OnvifBaseEntity
+import logging
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class UrmetCamera(Camera):
+class UrmetCamera(OnvifBaseEntity, Camera):
     attr_supported_features = CameraEntityFeature.STREAM
 
     def __init__(self, hass, entry):
-        super().__init__()
-        self._hass = hass
-        self._entry = entry
+        super().__init__(hass, entry)
         data = hass.data[DOMAIN][entry.entry_id]
         self._ip = data["ip"]
         self._uid = data["uid"]
@@ -31,16 +30,6 @@ class UrmetCamera(Camera):
     @property
     def unique_id(self):
         return self._attr_unique_id
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self._entry.data["uid"])},  # 關鍵：唯一標識
-            "name": f"Camera {self._entry.data['name']}",
-            "manufacturer": self._entry.data.get("manufacturer", "Urmet"),
-            "model": self._entry.data.get("model", "Camera"),
-            "sw_version": self._entry.data.get("fw_version", "1.0.0"),
-        }
 
     async def async_camera_image(self, width=None, height=None):
         # The width and height parameters are ignored as the camera does not support resizing.

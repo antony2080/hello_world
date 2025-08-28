@@ -3,16 +3,16 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .api import CameraLocalAPI
 from .const import DOMAIN
+from .api import CameraLocalAPI
+from .entity import OnvifBaseEntity
 
 IR_MODES = {"day": "Day", "night": "Night", "auto": "Automatic"}
 
 
-class IrCutSelect(SelectEntity):
+class IrCutSelect(OnvifBaseEntity, SelectEntity):
     def __init__(self, hass, entry):
-        self._hass = hass
-        self._entry = entry
+        super().__init__(hass, entry)
         self._attr_name = f"Camera {entry.data['name']} Mode"
         self._attr_unique_id = f"ircut_{entry.entry_id}"
         self._attr_options = list(IR_MODES.values())
@@ -21,16 +21,6 @@ class IrCutSelect(SelectEntity):
     @property
     def current_option(self):
         return self._current_option
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self._entry.data["uid"])},
-            "name": f"Camera {self._entry.data['name']}",
-            "manufacturer": self._entry.data.get("manufacturer", "Urmet"),
-            "model": self._entry.data.get("model", "Camera"),
-            "sw_version": self._entry.data.get("fw_version", "1.0.0"),
-        }
 
     @property
     def icon(self):

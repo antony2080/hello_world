@@ -1,30 +1,20 @@
-import asyncio
 import aiohttp
+import asyncio
 from homeassistant.components.button import ButtonEntity
-from .const import DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from .const import DOMAIN
+from .entity import OnvifBaseEntity
 
 
-class ZoomButton(ButtonEntity):
+class ZoomButton(OnvifBaseEntity, ButtonEntity):
     def __init__(self, hass, entry, direction):
-        self._hass = hass
+        super().__init__(hass, entry)
         self._direction = direction  # "ZoomIn" or "ZoomOut"
         self._attr_name = f"Camera {entry.data['name']} {direction}"
         self._attr_unique_id = f"urmet_camera_{entry.data['name']}_{direction.lower()}"
-        self._entry = entry
         self._duration = 1.2
-
-    @property
-    def device_info(self):
-        return {
-            "identifiers": {(DOMAIN, self._entry.data["uid"])},
-            "name": f"Camera {self._entry.data['name']}",
-            "manufacturer": self._entry.data.get("manufacturer", "Urmet"),
-            "model": self._entry.data.get("model", "Camera"),
-            "sw_version": self._entry.data.get("fw_version", "1.0.0"),
-        }
 
     async def async_press(self):
         data = self._hass.data[DOMAIN][self._entry.entry_id]
