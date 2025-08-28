@@ -43,6 +43,11 @@ async def try_login_and_get_info(ip, username, password, cam):
         cam_device = ONVIFCamera(ip, 80, username, password)
         devicemgmt = await cam_device.create_devicemgmt_service()
         info = await devicemgmt.GetDeviceInformation()
+        interfaces = cam.devicemgmt.GetNetworkInterfaces()
+        mac = None
+        for iface in interfaces:
+            if iface.Enabled:
+                mac = getattr(iface.Info, "HwAddress", None)
         logging.info(f"Successfully retrieved device info for IP: {ip}")
 
         device_info = DeviceInfo(
@@ -50,7 +55,7 @@ async def try_login_and_get_info(ip, username, password, cam):
             model=info.Model,
             fw_version=info.FirmwareVersion,
             serial_number=info.SerialNumber,
-            mac=None,
+            mac=mac,
         )
 
         await cam_device.close()
