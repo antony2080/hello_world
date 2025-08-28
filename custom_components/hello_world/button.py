@@ -64,5 +64,6 @@ async def async_setup_entry(
         [
             ZoomButton(hass, entry, "ZoomIn"),
             ZoomButton(hass, entry, "ZoomOut"),
+            RebootButton(hass, entry),
         ]
     )
