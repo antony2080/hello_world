@@ -1,11 +1,15 @@
 import aiohttp
 import asyncio
-from homeassistant.components.button import ButtonEntity
+from homeassistant.components.button import ButtonEntity, ButtonDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 from .entity import OnvifBaseEntity
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ZoomButton(OnvifBaseEntity, ButtonEntity):
@@ -30,6 +34,26 @@ class ZoomButton(OnvifBaseEntity, ButtonEntity):
             await session.put(url, data=payload_start, headers=headers, auth=auth)
             await asyncio.sleep(self._duration)
             await session.put(url, data=payload_stop, headers=headers, auth=auth)
+
+
+class RebootButton(OnvifBaseEntity, ButtonEntity):
+    _attr_device_class = ButtonDeviceClass.RESTART
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, hass, entry):
+        super().__init__(hass, entry)
+        self._attr_name = f"Camera {entry.data['name']} Reboot"
+        self._attr_unique_id = f"reboot_{entry.entry_id}"
+        self._client = hass.data[DOMAIN][entry.entry_id]["client"]
+
+    async def async_press(self) -> None:
+        """Handle the button press to reboot the camera."""
+        try:
+            devicemgmt = self._client.create_devicemgmt_service()
+            await devicemgmt.SystemReboot()
+            _LOGGER.info("Reboot command sent to camera %s", self._entry.data["ip"])
+        except Exception as e:
+            _LOGGER.error("Failed to reboot camera %s: %s", self._entry.data["ip"], e)
 
 
 async def async_setup_entry(

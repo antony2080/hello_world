@@ -1,5 +1,6 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from onvif import ONVIFCamera
 import logging
 
 from .const import DOMAIN
@@ -11,6 +12,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     _LOGGER.info("Setting up entry: %s", entry.title)
 
     hass.data.setdefault(DOMAIN, {})
+    cam = ONVIFCamera(
+        entry.data["ip"],
+        80,
+        entry.data["username"],
+        entry.data["password"],
+    )
     hass.data[DOMAIN][entry.entry_id] = {
         "ip": entry.data["ip"],
         "uid": entry.data["uid"],
@@ -20,6 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "model": entry.data.get("model"),
         "fw_version": entry.data.get("fw_version"),
         "mac": entry.data.get("mac"),
+        "client": cam,
     }
 
     # Forward the entry setup to the camera, button, and select platforms
