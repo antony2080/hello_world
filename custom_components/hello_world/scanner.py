@@ -43,7 +43,7 @@ async def try_login_and_get_info(ip, username, password, cam):
         cam_device = ONVIFCamera(ip, 80, username, password)
         devicemgmt = await cam_device.create_devicemgmt_service()
         info = await devicemgmt.GetDeviceInformation()
-        interfaces = cam.devicemgmt.GetNetworkInterfaces()
+        interfaces = await cam.devicemgmt.GetNetworkInterfaces()
         mac = None
         for iface in interfaces:
             if iface.Enabled:
