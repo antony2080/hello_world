@@ -58,7 +58,7 @@ class AudioAlarmSwitch(OnvifBaseEntity, SwitchEntity):
             self._is_on = enabled
 
 
-class MotionSwitch(SwitchEntity):
+class MotionSwitch(OnvifBaseEntity, SwitchEntity):
     def __init__(self, hass, entry):
         super().__init__(hass, entry)
         self._attr_name = f"Camera {entry.data['name']} Motion"
