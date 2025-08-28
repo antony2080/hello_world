@@ -17,7 +17,8 @@ class UrmetCamera(OnvifBaseEntity, Camera):
     attr_supported_features = CameraEntityFeature.STREAM
 
     def __init__(self, hass, entry):
-        super().__init__(hass, entry)
+        OnvifBaseEntity.__init__(self, hass, entry)
+        Camera.__init__(self)
         data = hass.data[DOMAIN][entry.entry_id]
         self._ip = data["ip"]
         self._uid = data["uid"]
