@@ -1,7 +1,7 @@
 {
   "domain": "hello_world",
   "name": "Hello World",
-  "version": "1.4.14",
+  "version": "1.4.15",
   "documentation": "https://github.com/antony2080/hello_world",
   "dependencies": [],
   "codeowners": ["@antony2080"],
