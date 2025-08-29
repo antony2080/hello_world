@@ -73,12 +73,11 @@ class SetSystemDateTimeButton(OnvifBaseEntity, ButtonEntity):
         """Handle the button press to set the system date and time."""
         try:
             system_date = dt_util.utcnow()
-            await self.hass.async_add_executor_job(
-                self._devicemgmt.SetSystemDateAndTime,
-                "Manual",  # DateTimeType
-                bool(time.localtime().tm_isdst),  # DaylightSavings
-                {"TZ": "UTC"},  # TimeZone
-                {
+            request = {
+                "DateTimeType": "Manual",
+                "DaylightSavings": bool(time.localtime().tm_isdst),
+                "TimeZone": {"TZ": "UTC"},
+                "UTCDateTime": {
                     "Date": {
                         "Year": system_date.year,
                         "Month": system_date.month,
@@ -90,6 +89,10 @@ class SetSystemDateTimeButton(OnvifBaseEntity, ButtonEntity):
                         "Second": system_date.second,
                     },
                 },
+            }
+
+            await self.hass.async_add_executor_job(
+                self._devicemgmt.SetSystemDateAndTime, request
             )
             _LOGGER.info(
                 "Set system date and time for camera %s", self._entry.data["ip"]
