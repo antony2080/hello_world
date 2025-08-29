@@ -73,11 +73,12 @@ class SetSystemDateTimeButton(OnvifBaseEntity, ButtonEntity):
         """Handle the button press to set the system date and time."""
         try:
             system_date = dt_util.utcnow()
-            await self._devicemgmt.SetSystemDateAndTime(
-                DateTimeType="Manual",
-                DaylightSavings=bool(time.localtime().tm_isdst),
-                TimeZone={"TZ": "UTC"},
-                UTCDateTime={
+            await self.hass.async_add_executor_job(
+                self._devicemgmt.SetSystemDateAndTime,
+                "Manual",  # DateTimeType
+                bool(time.localtime().tm_isdst),  # DaylightSavings
+                {"TZ": "UTC"},  # TimeZone
+                {
                     "Date": {
                         "Year": system_date.year,
                         "Month": system_date.month,

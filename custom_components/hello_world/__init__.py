@@ -19,7 +19,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         entry.data["password"],
     )
     await cam.update_xaddrs()
-    devicemgmt = cam.create_devicemgmt_service()
+    devicemgmt = await cam.create_devicemgmt_service()
 
     hass.data[DOMAIN][entry.entry_id] = {
         "ip": entry.data["ip"],
