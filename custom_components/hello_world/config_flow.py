@@ -3,7 +3,7 @@ import voluptuous as vol
 import asyncio
 from .api import UrmetCloudAPI
 from .scanner import scan_onvif_hosts_sync, try_login_and_get_info
-from .const import DOMAIN, CONF_MANUAL_INPUT
+from .const import DOMAIN
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class HelloWorldConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         options = {f"{dev['name']} ({dev['ip']})": dev for dev in self.found_devices}
 
         if user_input:
-            selected_label = user_input[CONF_MANUAL_INPUT]
+            selected_label = user_input["device"]
             selected = options[selected_label]
             return self.async_create_entry(
                 title=f"{selected['name']} ({selected['ip']})",
