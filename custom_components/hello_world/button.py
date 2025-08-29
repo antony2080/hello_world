@@ -42,17 +42,17 @@ class RebootButton(OnvifBaseEntity, ButtonEntity):
     _attr_device_class = ButtonDeviceClass.RESTART
     _attr_entity_category = EntityCategory.CONFIG
 
-    def __init__(self, hass, entry):
+    def __init__(self, hass, entry, devicemgmt):
         super().__init__(hass, entry)
         self._attr_name = f"Camera {entry.data['name']} Reboot"
         self._attr_unique_id = f"reboot_{entry.entry_id}"
         self._client = hass.data[DOMAIN][entry.entry_id]["client"]
+        self._devicemgmt = devicemgmt
 
     async def async_press(self) -> None:
         """Handle the button press to reboot the camera."""
         try:
-            devicemgmt = self._client.create_devicemgmt_service()
-            await devicemgmt.SystemReboot()
+            await self._devicemgmt.SystemReboot()
             _LOGGER.info("Reboot command sent to camera %s", self._entry.data["ip"])
         except Exception as e:
             _LOGGER.error("Failed to reboot camera %s: %s", self._entry.data["ip"], e)
@@ -62,18 +62,18 @@ class SetSystemDateTimeButton(OnvifBaseEntity, ButtonEntity):
     _attr_device_class = ButtonDeviceClass.UPDATE
     _attr_entity_category = EntityCategory.CONFIG
 
-    def __init__(self, hass, entry):
+    def __init__(self, hass, entry, devicemgmt):
         super().__init__(hass, entry)
         self._attr_name = f"Camera {entry.data['name']} Set System DateTime"
         self._attr_unique_id = f"set_system_datetime_{entry.entry_id}"
         self._client = hass.data[DOMAIN][entry.entry_id]["client"]
+        self._devicemgmt = devicemgmt
 
     async def async_press(self) -> None:
         """Handle the button press to set the system date and time."""
         try:
-            devicemgmt = self._client.create_devicemgmt_service()
             system_date = dt_util.utcnow()
-            await devicemgmt.SetSystemDateAndTime(
+            await self._devicemgmt.SetSystemDateAndTime(
                 DateTimeType="Manual",
                 DaylightSavings=bool(time.localtime().tm_isdst),
                 TimeZone={"TZ": "UTC"},
@@ -105,11 +105,13 @@ async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ):
     """Set up the button platform."""
+    data = hass.data[DOMAIN][entry.entry_id]
+    devicemgmt = data["devicemgmt"]
     async_add_entities(
         [
             ZoomButton(hass, entry, "ZoomIn"),
             ZoomButton(hass, entry, "ZoomOut"),
-            RebootButton(hass, entry),
-            SetSystemDateTimeButton(hass, entry),
+            RebootButton(hass, entry, devicemgmt),
+            SetSystemDateTimeButton(hass, entry, devicemgmt),
         ]
     )

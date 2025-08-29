@@ -18,6 +18,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         entry.data["username"],
         entry.data["password"],
     )
+    await cam.update_xaddrs()
+    devicemgmt = cam.create_devicemgmt_service()
+
     hass.data[DOMAIN][entry.entry_id] = {
         "ip": entry.data["ip"],
         "uid": entry.data["uid"],
@@ -28,6 +31,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         "fw_version": entry.data.get("fw_version"),
         "mac": entry.data.get("mac"),
         "client": cam,
+        "devicemgmt": devicemgmt,
     }
 
     # Forward the entry setup to the camera, button, and select platforms
